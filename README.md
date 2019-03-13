@@ -107,7 +107,7 @@ class DesiredDatabaseModel extends ActualDatabaseModel
     $model = new DesiredDatabaseModel::where('name','Joe')->orWhere('name','Judy')->get();
 
     /*
-        The call above Will result in this query being run:
+        The call above will result in the following query being run:
         select *
         from "tbl_Database_Table"
         where "DB_Name" = 'Joe' or "DB_Name" = 'Judy'
