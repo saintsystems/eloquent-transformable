@@ -1,4 +1,3 @@
-
 <?php
 
 namespace SaintSystems\Eloquent\Transformable;

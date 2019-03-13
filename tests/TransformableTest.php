@@ -59,7 +59,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::where('id', 1);
 
-        $expected = 'select * from "tbl_Database_Table" where "PK_Database_ID" = ?';
+        $expected = 'select * from "tbl_Database_Table" where "tbl_Database_Table"."PK_Database_ID" = ?';
         $actual = $desiredBuilder->toSql();
 
         //$this->addWarning($actual);
@@ -72,7 +72,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::whereId(1);
 
-        $expected = 'select * from "tbl_Database_Table" where "PK_Database_ID" = ?';
+        $expected = 'select * from "tbl_Database_Table" where "tbl_Database_Table"."PK_Database_ID" = ?';
         $actual = $desiredBuilder->toSql();
 
         //$this->addWarning($actual);
@@ -85,7 +85,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::where('id', 1)->orWhere('name', 'Name');
 
-        $expected = 'select * from "tbl_Database_Table" where "PK_Database_ID" = ? or "DB_Name" = ?';
+        $expected = 'select * from "tbl_Database_Table" where "tbl_Database_Table"."PK_Database_ID" = ? or "tbl_Database_Table"."DB_Name" = ?';
         $actual = $desiredBuilder->toSql();
 
         // $this->addWarning($actual);
@@ -98,7 +98,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::whereName('Name');
 
-        $expected = 'select * from "tbl_Database_Table" where "DB_Name" = ?';
+        $expected = 'select * from "tbl_Database_Table" where "tbl_Database_Table"."DB_Name" = ?';
         $actual = $desiredBuilder->toSql();
 
         // $this->addWarning($actual);
@@ -111,7 +111,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::orderBy('name');
 
-        $expected = 'select * from "tbl_Database_Table" order by "DB_Name" asc';
+        $expected = 'select * from "tbl_Database_Table" order by "tbl_Database_Table"."DB_Name" asc';
         $actual = $desiredBuilder->toSql();
 
         // $this->addWarning($actual);
@@ -124,7 +124,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::orderBy('name','desc');
 
-        $expected = 'select * from "tbl_Database_Table" order by "DB_Name" desc';
+        $expected = 'select * from "tbl_Database_Table" order by "tbl_Database_Table"."DB_Name" desc';
         $actual = $desiredBuilder->toSql();
 
         // $this->addWarning($actual);
@@ -137,7 +137,7 @@ class TransformableTest extends TestCase
     {
         $desiredBuilder = DesiredDatabaseModel::orderBy('name')->orderBy('id');
 
-        $expected = 'select * from "tbl_Database_Table" order by "DB_Name" asc, "PK_Database_ID" asc';
+        $expected = 'select * from "tbl_Database_Table" order by "tbl_Database_Table"."DB_Name" asc, "tbl_Database_Table"."PK_Database_ID" asc';
         $actual = $desiredBuilder->toSql();
 
         // $this->addWarning($actual);
