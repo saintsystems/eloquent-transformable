@@ -2,8 +2,9 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/saintsystems/eloquent-transformable.svg?style=flat-square)](https://packagist.org/packages/saintsystems/eloquent-transformable)
 [![Total Downloads](https://img.shields.io/packagist/dt/saintsystems/eloquent-transformable.svg?style=flat-square)](https://packagist.org/packages/saintsystems/eloquent-transformable)
+[![Build Status](https://travis-ci.org/saintsystems/eloquent-transformable.svg?branch=master)](https://travis-ci.org/saintsystems/eloquent-transformable)
 
-Query your Eloquent models the way you want them to look in the database using a simple transformation layer.
+Work with your Laravel Eloquent models the way you want them to look (not as they are) using a simple transformation layer.
 
 ## Installation
 
@@ -13,63 +14,124 @@ You can install the package in to any Laravel `5.8.*` via composer:
 composer require saintsystems/eloquent-transformable
 ```
 
+## Use Case
+
+Laravel Eloquent is built on conventions. These conventions make certain assumptions like your primary keys being named `id` or the way foreign key columns should be named. You can override these conventions, but that requires a lot of configuration. Additionally, tools like [Laravel Nova](https://nova.laravel.com) assume the default Eloquent conventions. Configuring Nova and Eloquent to use difference naming conventions then becomes a pain and your code becomes brittle because it is tied explicitly to your unconventional database naming standards.
+
+Databases aren't always under our control. They may be managed by DBAs, could be third-party systems, or there may simply be a legacy database that doesn't adhere to Laravel's conventions that we don't want to change or can't change to make it conform to Laravel's conventions. This could be in the form of unconventional table names, column prefixes, column naming conventions, foreign key names, etc. We don't always control the database over which a Laravel app might sit.
+
+Eloquent Transformable allows you to define how you would like the database columns to look with a simple transformation and then use your Eloquent Models as if they did adhere to Eloquent's naming conventions.
+
+Transformable can also be used as a simple transformation layer to shield your application from the underlying database structure.
+
 ## Usage
 
-To add the link ability to your Laravel Nova metric cards, you need to add the `Linkable` traits to your metrics.
-
-For example, within your custom Nova value metric card:
+1. Create a base `Model.php` class in your project and add the `Transformable` trait to it.
 ```php
-// in your Nova value metric card class:
-import SaintSystems\Nova\LinkableMetrics\Linkable;
+    namespace App;
 
-use Linkable;
+    use Illuminate\Database\Eloquent\Model as EloquentModel;
+    use SaintSystems\Eloquent\Transformable\Transformable;
 
-```
-
-## Defining Metric Links
-
-You can define metric links using the `route` method from the `Linkable` trait in one of two ways:
-
-1. When the card is registered:
-```php
-    // NovaServiceProvider.php
-
-    /**
-     * Get the cards that should be displayed on the Nova dashboard.
-     *
-     * @return array
-     */
-    protected function cards()
+    class Model extends EloquentModel
     {
-        return [
-            (new JobsInProgress)->width('1/3')->route('index', ['resourceName' => 'jobs']),`
-        ];
+        use Transformable;
     }
 ```
-2. Or, within the card itself (useful for cards only available on detail screens where you might want to filter the url based on the current resource):
 
+2. Create a Model that represents your "Actual" database model.
 ```php
-    // In your linktable Nova metric class
+    namespace App;
 
-    /**
-     * Calculate the value of the metric.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return mixed
-     */
-    public function calculate(Request $request, UnitOfMeasure $unitOfMeasure)
+    class ActualDatabaseModel extends Model
     {
-        $result = $this->result($unitOfMeasure->items()->count());
-        $params = ['resourceName' => 'items'];
-        $query = [
-            'viaResource' => $request->resource,
-            'viaResourceId' => $unitOfMeasure->id,
-            'viaRelationship' => 'items',
-            'relationshipType' => 'hasMany',
+        protected $table = 'tbl_Database_Table';
+
+        protected $primaryKey = 'PK_Database_ID';
+
+        protected $appends = [
+            'DB_Name',
+            'FK_Foreign_Key_ID'
         ];
-        return $result->route('index', $params, $query);
+
+        protected $guarded = [];
     }
 ```
+
+3. Create a Model that represents your "Desired" database model.
+```php
+namespace App;
+
+class DesiredDatabaseModel extends ActualDatabaseModel
+{
+    // Desired $primaryKey name (PK_Database_ID is the actual PK in the database)
+    protected $primaryKey = 'id';
+
+    /**
+     * Transformation Mapping of DB Column Names to desired Eloquent Model Attribute Names
+     * This variable comes from the SaintSystems\Eloquent\Transformable\Transformable Trait
+     * used in the base Model.php
+     * @var array
+     */
+    protected $transform = [
+        'id' => 'PK_Database_ID',
+        'name' => 'DB_Name',
+        'foreign_key_id' => 'FK_DB_Foreign_Key_ID'
+    ]; // TransformationMap;
+}
+```
+
+4. Use your new "Transformed" model the way you want to:
+```php
+    $model = new DesiredDatabaseModel([
+        'id' => 1,
+        'name' => 'Name',
+        'foreign_key_id' => 2
+    ]);
+
+    dd($desiredModel->toArray());
+    /*
+    Will output the following:
+    [
+        'id' => 1,
+        'name' => 'Name',
+        'foreign_key_id' => 2
+    ]
+    */
+
+    // Now, save the model
+    $model->save();
+    // Despite using transformed attributes above, the record will still save using the transformed attributes we defined.
+
+    // We can even query the model with our desired/transformed column names
+    $model = new DesiredDatabaseModel::where('name','Joe')->orWhere('name','Judy')->get();
+
+    /*
+        The call above Will result in this query being run:
+        select *
+        from "tbl_Database_Table"
+        where "DB_Name" = 'Joe' or "DB_Name" = 'Judy'
+
+        But will come back in the following structure:
+        [
+            [
+                'id' => 1,
+                'name' => 'Joe',
+                'foreign_key_id' => 1
+            ],
+            [
+                'id' => 2,
+                'name' => 'Judy',
+                'foreign_key_id' => 1
+            ]
+        ]
+    */
+
+```
+
+## Benefits
+
+Using Eloquent Transformable we can build our app around Laravel Eloquent's conventions and use our models as if the underlying database had been built to Laravel's conventions. If we have time and are able to move our database structure to Laravel's conventions eventually, we can simply remove the transformation from our models. This shields us from underlying database changes and allows us to control the appearance of our how our underlying database is exposed in our apps or apis.
 
 ## Credits
 
