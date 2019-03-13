@@ -1,3 +1,4 @@
+
 <?php
 
 namespace SaintSystems\Eloquent\Transformable;
@@ -107,6 +108,7 @@ trait Transformable
         $connection = $this->getConnection();
         $builder = new TransformableQueryBuilder($connection, $connection->getQueryGrammar(), $connection-> getPostProcessor());
         $builder->setTransform($this->transform);
+        $builder->setModel($this);
         return $builder;
     }
 

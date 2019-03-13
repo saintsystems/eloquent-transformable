@@ -7,15 +7,28 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
+use Illuminate\Support\Str;
 
 class TransformableQueryBuilder extends Builder
 {
     protected $query;
+    protected $model;
     protected $transform = [];
 
     public function setTransform($transform)
     {
         $this->transform = $transform;
+    }
+
+    /**
+     * Set a model instance for the model being queried.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return $this
+     */
+    public function setModel($model)
+    {
+        $this->model = $model;
     }
 
     /**
@@ -93,6 +106,9 @@ class TransformableQueryBuilder extends Builder
             }
         }
 
+        if ($column != '*' && !Str::contains($column, '.')) {
+            $column = $this->model->qualifyColumn($column);
+        }
         return $column;
     }
 
@@ -110,3 +126,4 @@ class TransformableQueryBuilder extends Builder
         return parent::toSql();
     }
 }
+
