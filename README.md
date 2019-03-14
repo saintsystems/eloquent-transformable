@@ -43,11 +43,11 @@ Transformable can also be used as a simple transformation layer to shield your a
 
 Assuming a table definition of:
 
-Table Name: `tbl_Database_Table`
+**Table Name:** `tbl_Database_Table`
 
 | Column           | Type   |
 |------------------|--------|
-|PK_Primary        | int    |
+|PK_Database_I     | int    |
 |DB_Name           | varchar|
 |FK_Foreign_Key_ID | int    |
 
