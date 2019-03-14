@@ -45,11 +45,11 @@ Assuming a table definition of:
 
 Table Name: `tbl_Database_Table`
 
-Column | Type
--------------------
-PK_Primary | int
-DB_Name | varchar
-FK_Foreign_Key_ID | int
+| Column           | Type   |
+|------------------|--------|
+|PK_Primary        | int    |
+|DB_Name           | varchar|
+|FK_Foreign_Key_ID | int    |
 
 ```php
     namespace App;
