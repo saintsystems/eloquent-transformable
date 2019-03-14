@@ -42,8 +42,11 @@ Transformable can also be used as a simple transformation layer to shield your a
 2. Create a Model that represents your "Actual" database model.
 
 Assuming a table definition of:
+
 Table Name: `tbl_Database_Table`
+
 Column | Type
+-------------------
 PK_Primary | int
 DB_Name | varchar
 FK_Foreign_Key_ID | int
