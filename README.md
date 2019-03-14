@@ -47,7 +47,7 @@ Assuming a table definition of:
 
 | Column           | Type   |
 |------------------|--------|
-|PK_Database_I     | int    |
+|PK_Database_ID    | int    |
 |DB_Name           | varchar|
 |FK_Foreign_Key_ID | int    |
 
